@@ -6,7 +6,7 @@ The success of Transformers in the field of images has led to the development of
 
 ## Approach
 
-![image](main_picture_v4.png = 200x200)
+![image](main_picture_v4.png)
 
 Our Gaussian Mixture Mask Attention Mechanism firstly defines multiple Gaussian Masks with different parameters $\sigma$ and $\alpha$ for an image in patch-wise, and then linearly combines these Gaussian Masks to form a Gaussian Mixture Mask of size $2n-1$. Afterwards, a 'reverse-convolution' operation is performed in the Gaussian Mixture Mask, and the masked image is unfolded row-wise to obtain attention scores, which are regulated by the distance.
 
