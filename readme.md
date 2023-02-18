@@ -6,4 +6,4 @@ The success of Transformers in the field of images has led to the development of
 
 ## Approach
 
-![image](image_url)
+![image](main_picture_v4.png)
