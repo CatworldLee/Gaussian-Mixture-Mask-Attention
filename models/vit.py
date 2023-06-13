@@ -3,7 +3,7 @@ from torch import nn, einsum
 from utils.drop_path import DropPath
 from einops import rearrange, repeat
 from einops.layers.torch import Rearrange
-from .GMM import Gaussian_Mixture_Mask
+from .gmm import Gaussian_Mixture_Mask, Simple_Mask, On_attention_gaussian_mask
 # helpers
  
 def pair(t):
@@ -48,7 +48,7 @@ class FeedForward(nn.Module):
 
 
 class Attention(nn.Module):
-    def __init__(self, dim, num_patches, heads = 8, dim_head = 64, dropout = 0., is_GMM=False, num_kernals=3):
+    def __init__(self, dim, num_patches, heads = 8, dim_head = 64, dropout = 0., is_GMM=False, is_SLM=False, num_kernals=3, mask=None):
         super().__init__()
         inner_dim = dim_head *  heads
         project_out = not (heads == 1 and dim_head == dim)
@@ -67,7 +67,9 @@ class Attention(nn.Module):
         ) if project_out else nn.Identity()
             
         if is_GMM:
-            self.mask = Gaussian_Mixture_Mask(num_patches, num_kernals=self.num_kernals)
+            self.mask = Gaussian_Mixture_Mask(num_heads=self.heads, num_kernals=num_kernals, mask=mask)
+        elif is_SLM:
+            self.mask = Simple_Mask(num_heads=self.heads, num_patches=self.num_patches)
         else:
             self.mask = None
 
@@ -80,8 +82,9 @@ class Attention(nn.Module):
         
         if self.mask is not None:
             dots = self.mask(dots)
-
+        
         attn = self.attend(dots)
+
         out = einsum('b h i j, b h j d -> b h i d', attn, v) 
             
         out = rearrange(out, 'b h n d -> b n (h d)')
@@ -97,14 +100,14 @@ class Attention(nn.Module):
 
 
 class Transformer(nn.Module):
-    def __init__(self, dim, num_patches, depth, heads, dim_head, mlp_dim_ratio, num_kernals, dropout = 0., stochastic_depth=0., is_GMM=False):
+    def __init__(self, dim, num_patches, depth, heads, dim_head, mlp_dim_ratio, num_kernals, dropout = 0., stochastic_depth=0., is_GMM=False, is_SLM=False, mask=None,):
         super().__init__()
         self.layers = nn.ModuleList([])
         self.scale = {}
 
         for i in range(depth):
             self.layers.append(nn.ModuleList([
-                PreNorm(num_patches, dim, Attention(dim, num_patches, heads = heads, dim_head = dim_head, dropout = dropout, is_GMM=is_GMM, num_kernals = num_kernals)),
+                PreNorm(num_patches, dim, Attention(dim, num_patches, heads = heads, dim_head = dim_head, dropout = dropout, is_GMM=is_GMM, is_SLM=is_SLM, num_kernals = num_kernals, mask=mask)),
                 PreNorm(num_patches, dim, FeedForward(dim, num_patches, dim * mlp_dim_ratio, dropout = dropout))
             ]))            
         self.drop_path = DropPath(stochastic_depth) if stochastic_depth > 0 else nn.Identity()
@@ -118,7 +121,7 @@ class Transformer(nn.Module):
 
 class ViT(nn.Module):
     def __init__(self, *, img_size, patch_size, num_classes, dim, depth, heads, mlp_dim_ratio, num_kernals, channels = 3, 
-                 dim_head = 16, dropout = 0., emb_dropout = 0., stochastic_depth=0.,is_GMM=False):
+                 dim_head = 16, dropout = 0., emb_dropout = 0., stochastic_depth=0., is_GMM=False ,is_SLM=False,):
         super().__init__()
         image_height, image_width = pair(img_size)
         patch_height, patch_width = pair(patch_size)
@@ -126,7 +129,8 @@ class ViT(nn.Module):
         self.patch_dim = channels * patch_height * patch_width
         self.dim = dim
         self.num_classes = num_classes
-       
+
+        self.mask = nn.Parameter(On_attention_gaussian_mask(self.num_patches), requires_grad=False)
 
         self.to_patch_embedding = nn.Sequential(
             Rearrange('b c (h p1) (w p2) -> b (h w) (p1 p2 c)', p1 = patch_height, p2 = patch_width),
@@ -138,7 +142,7 @@ class ViT(nn.Module):
             
         self.dropout = nn.Dropout(emb_dropout)
         self.transformer = Transformer(self.dim, self.num_patches, depth, heads, dim_head, mlp_dim_ratio, num_kernals, dropout, 
-                                       stochastic_depth, is_GMM=is_GMM)
+                                       stochastic_depth, is_GMM=is_GMM, is_SLM=is_SLM, mask=self.mask)
 
         self.mlp_head = nn.Sequential(
             nn.LayerNorm(self.dim),
