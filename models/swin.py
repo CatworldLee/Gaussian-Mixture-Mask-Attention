@@ -12,7 +12,7 @@ from timm.models.layers import to_2tuple, trunc_normal_
 from utils.drop_path import DropPath
 import torch
 from einops.layers.torch import Rearrange
-from .gmm import Gaussian_Mixture_Mask
+from .gmm import Gaussian_Mixture_Mask, On_attention_gaussian_mask, Simple_Mask
 class Mlp(nn.Module):
     def __init__(self, in_features, hidden_features=None, out_features=None, act_layer=nn.GELU, drop=0.):
         super().__init__()
@@ -75,7 +75,7 @@ class WindowAttention(nn.Module):
         proj_drop (float, optional): Dropout ratio of output. Default: 0.0
     """
 
-    def __init__(self, dim, window_size, num_heads, qkv_bias=True, qk_scale=None, attn_drop=0., proj_drop=0., is_GMM=False, num_kernals=3):
+    def __init__(self, dim, window_size, num_heads, qkv_bias=True, qk_scale=None, attn_drop=0., proj_drop=0., is_GMM=False, is_SLM=False, num_kernals=3, mask=None,):
 
         super().__init__()
         self.dim = dim
@@ -84,11 +84,16 @@ class WindowAttention(nn.Module):
         head_dim = dim // num_heads
         self.scale = qk_scale or head_dim ** -0.5
         self.is_GMM = is_GMM
+        self.is_SLM = is_SLM
+        
+        
         if is_GMM:
-            self.mask = Gaussian_Mixture_Mask(window_size[0] ** 2, num_kernals)
+            self.mask = Gaussian_Mixture_Mask(num_heads=self.num_heads, num_kernals=num_kernals, mask=mask)
+        elif is_SLM:
+            self.mask = Simple_Mask(num_heads=self.num_heads, num_patches=self.window_size ** 2)
         else:
             self.mask = None
-
+        
         # define a parameter table of relative position bias
         self.relative_position_bias_table = nn.Parameter(
             torch.zeros((2 * window_size[0] - 1) * (2 * window_size[1] - 1), num_heads))  # 2*Wh-1 * 2*Ww-1, nH
@@ -178,7 +183,7 @@ class SwinTransformerBlock(nn.Module):
 
     def __init__(self, dim, input_resolution, num_heads, num_kernals, window_size=7, shift_size=0,
                  mlp_ratio=4., qkv_bias=True, qk_scale=None, drop=0., attn_drop=0., drop_path=0.,
-                 act_layer=nn.GELU, norm_layer=nn.LayerNorm, is_GMM=False):
+                 act_layer=nn.GELU, norm_layer=nn.LayerNorm, is_GMM=False, is_SLM=False, mask=None,):
         super().__init__()
         self.dim = dim
         self.input_resolution = input_resolution
@@ -195,7 +200,7 @@ class SwinTransformerBlock(nn.Module):
         self.norm1 = norm_layer(dim)
         self.attn = WindowAttention(
             dim, window_size=to_2tuple(self.window_size), num_heads=num_heads,
-            qkv_bias=qkv_bias, qk_scale=qk_scale, attn_drop=attn_drop, proj_drop=drop, is_GMM=is_GMM, num_kernals=num_kernals)
+            qkv_bias=qkv_bias, qk_scale=qk_scale, attn_drop=attn_drop, proj_drop=drop, is_GMM=is_GMM, is_SLM=is_SLM, num_kernals=num_kernals, mask=mask,)
 
         self.drop_path = DropPath(drop_path) if drop_path > 0. else nn.Identity()
         self.norm2 = norm_layer(dim)
@@ -345,7 +350,7 @@ class BasicLayer(nn.Module):
     def __init__(self, dim, input_resolution, depth, num_heads, window_size, num_kernals,
                  mlp_ratio=4., qkv_bias=True, qk_scale=None, drop=0., attn_drop=0.,
                  drop_path=0., norm_layer=nn.LayerNorm, downsample=False, use_checkpoint=False,
-                 is_GMM=False):
+                 is_GMM=False, is_SLM=False, mask=None,):
 
         super().__init__()
         self.dim = dim
@@ -363,7 +368,7 @@ class BasicLayer(nn.Module):
                                  qkv_bias=qkv_bias, qk_scale=qk_scale,
                                  drop=drop, attn_drop=attn_drop,
                                  drop_path=drop_path[i] if isinstance(drop_path, list) else drop_path,
-                                 norm_layer=norm_layer, is_GMM=is_GMM, num_kernals=num_kernals)
+                                 norm_layer=norm_layer, is_GMM=is_GMM, is_SLM=is_SLM, num_kernals=num_kernals, mask=mask,)
             for i in range(depth)])
 
         # patch merging layer
@@ -460,7 +465,7 @@ class SwinTransformer(nn.Module):
                  window_size=7, mlp_ratio=4., qkv_bias=True, qk_scale=None,
                  drop_rate=0., attn_drop_rate=0., drop_path_rate=0.1,
                  norm_layer=nn.LayerNorm, patch_norm=True,
-                 use_checkpoint=False, is_GMM=False, num_kernals=5, 
+                 use_checkpoint=False, is_GMM=False, is_SLM=False, num_kernals=5, 
                  **kwargs):
         super().__init__()
            
@@ -471,6 +476,8 @@ class SwinTransformer(nn.Module):
         self.patch_norm = patch_norm
         self.num_features = int(embed_dim * 2 ** (self.num_layers - 1))
         self.mlp_ratio = mlp_ratio
+        
+        self.mask = nn.Parameter(On_attention_gaussian_mask(window_size**2), requires_grad=False)
         
       
         self.patch_embed = PatchEmbed(
@@ -506,7 +513,7 @@ class SwinTransformer(nn.Module):
                                qkv_bias=qkv_bias, qk_scale=qk_scale,
                                drop=drop_rate, attn_drop=attn_drop_rate,
                                drop_path=dpr[sum(depths[:i_layer]):sum(depths[:i_layer + 1])],
-                               norm_layer=norm_layer, is_GMM=is_GMM, num_kernals=num_kernals, 
+                               norm_layer=norm_layer, is_GMM=is_GMM, is_SLM=is_SLM, num_kernals=num_kernals, mask=self.mask, 
                                downsample=True if (i_layer < self.num_layers - 1) else False,
                                use_checkpoint=use_checkpoint)
             self.layers.append(layer)
