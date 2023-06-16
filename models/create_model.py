@@ -4,7 +4,13 @@ from .cait import CaiT
 
 def create_model(img_size, n_classes, args):
     if args.model == 'vit':
-        patch_size = 4 if img_size == 32 else 8
+        if img_size == 32:
+            patch_size = 4
+        elif img_size == 64:
+            patch_size = 8
+        elif img_size == 256:
+            patch_size = 32
+
         model = ViT(img_size=img_size, patch_size = patch_size, num_classes=n_classes, dim=192, 
                     mlp_dim_ratio=2, depth=9, heads=12, dim_head=192//12,
                     stochastic_depth=args.sd, is_GMM=args.is_GMM, is_SLM=args.is_SLM, num_kernals=args.num_kernals)
@@ -64,7 +70,7 @@ def create_model(img_size, n_classes, args):
     
     elif args.model == 'cait':       
         patch_size = 4 if img_size == 32 else 8
-        model = CaiT(img_size=img_size, patch_size = patch_size, num_classes=n_classes, stochastic_depth=args.sd, 
+        model = CaiT(img_size=img_size, patch_size = patch_size, num_classes=n_classes, stochastic_depth=args.sd, is_GMM=args.is_GMM, is_SLM=args.is_SLM, num_kernals=args.num_kernals,
                      )
         
     return model
