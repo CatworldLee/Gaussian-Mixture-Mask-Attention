@@ -1,6 +1,7 @@
 from .vit import ViT
 from .swin import SwinTransformer
 from .cait import CaiT
+from .pit import PiT
 
 def create_model(img_size, n_classes, args):
     if args.model == 'vit':
@@ -72,5 +73,23 @@ def create_model(img_size, n_classes, args):
         patch_size = 4 if img_size == 32 else 8
         model = CaiT(img_size=img_size, patch_size = patch_size, num_classes=n_classes, stochastic_depth=args.sd, is_GMM=args.is_GMM, is_SLM=args.is_SLM, num_kernals=args.num_kernals,
                      )
+
+    elif args.model == 'cait-tiny':       
+        patch_size = 4 if img_size == 32 else 8
+        model = CaiT(dim=108, img_size=img_size, patch_size = patch_size, num_classes=n_classes, stochastic_depth=args.sd, is_GMM=args.is_GMM, is_SLM=args.is_SLM, num_kernals=args.num_kernals,
+                     )
+        
+    elif args.model == 'pit':
+        patch_size = 2 if img_size == 32 else 4    
+        args.channel = 72
+        args.heads = (2, 4, 8)
+        args.depth = (2, 6, 4)
+        dim_head = args.channel // args.heads[0]
+        
+        model = PiT(img_size=img_size, patch_size = patch_size, num_classes=n_classes, dim=args.channel, 
+                    mlp_dim_ratio=2, depth=args.depth, heads=args.heads, dim_head=dim_head, 
+                    stochastic_depth=args.sd,
+                    is_GMM=args.is_GMM, is_SLM=args.is_SLM, num_kernals=args.num_kernals
+                    )
         
     return model
