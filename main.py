@@ -27,7 +27,7 @@ warnings.filterwarnings("ignore", category=Warning)
 
 best_acc1 = 0
 
-MODELS = ['vit', 'swin', 'cait', 'vit_d6', 'vit_d15', 'vit_d30', 'vit_d60', 'vit_d30*', 'vit_d30**', 'vit-base']
+MODELS = ['vit', 'swin', 'pit', 'cait', 'cait-tiny', 'vit_d6', 'vit_d15', 'vit_d30', 'vit_d60', 'vit_d30*', 'vit_d30**', 'vit-base']
 
 
 def init_parser():
