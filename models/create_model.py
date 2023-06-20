@@ -2,6 +2,7 @@ from .vit import ViT
 from .swin import SwinTransformer
 from .cait import CaiT
 from .pit import PiT
+from .t2t import T2T_ViT
 
 def create_model(img_size, n_classes, args):
     if args.model == 'vit':
@@ -92,4 +93,9 @@ def create_model(img_size, n_classes, args):
                     is_GMM=args.is_GMM, is_SLM=args.is_SLM, num_kernals=args.num_kernals
                     )
         
+    elif args.model =='t2t':
+        model = T2T_ViT(img_size=img_size, num_classes=n_classes, drop_path_rate=args.sd, 
+                        is_GMM=args.is_GMM, is_SLM=args.is_SLM, num_kernals=args.num_kernals
+                        )
+    
     return model
