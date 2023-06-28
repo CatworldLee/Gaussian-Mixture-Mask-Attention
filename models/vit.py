@@ -158,7 +158,7 @@ class ViT(nn.Module):
             
         b, n, _ = x.shape
         
-        x += self.pos_embedding[:, :(n + 1)]
+        x += self.pos_embedding[:, : n]
         x = self.dropout(x)
 
         x = self.transformer(x)      

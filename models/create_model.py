@@ -23,6 +23,12 @@ def create_model(img_size, n_classes, args):
                     mlp_dim_ratio=2, depth=8, heads=4, dim_head=256//4,
                     stochastic_depth=args.sd, is_GMM=args.is_GMM, is_SLM=args.is_SLM, num_kernals=args.num_kernals)
         
+    elif args.model == 'vit-heat':
+        patch_size = 2 if img_size == 32 else 4
+        model = ViT(img_size=img_size, patch_size = patch_size, num_classes=n_classes, dim=192,
+                    mlp_dim_ratio=2, depth=8, heads=6, dim_head=192//6,
+                    stochastic_depth=args.sd, is_GMM=args.is_GMM, is_SLM=args.is_SLM, num_kernals=args.num_kernals)
+        
     elif args.model == 'vit_d6':
         patch_size = 4 if img_size == 32 else 8
         model = ViT(img_size=img_size, patch_size = patch_size, num_classes=n_classes, dim=252, 
@@ -82,7 +88,7 @@ def create_model(img_size, n_classes, args):
         
     elif args.model == 'pit':
         patch_size = 2 if img_size == 32 else 4    
-        args.channel = 72
+        args.channel = 96
         args.heads = (2, 4, 8)
         args.depth = (2, 6, 4)
         dim_head = args.channel // args.heads[0]
