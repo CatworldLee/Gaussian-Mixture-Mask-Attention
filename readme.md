@@ -1,4 +1,5 @@
-# Gaussian-Mixture-Mask Attention
+# CNN or ViT? Revisiting Vision Transformers Through the Lens of Convolution
+[Chenghao Li](https://catworldlee.github.io/), [Chaoning Zhang*](https://scholar.google.co.kr/citations?user=lvhxhyQAAAAJ&hl=en)
 
 ## Abstract
 
