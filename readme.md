@@ -8,7 +8,7 @@ The success of the Vision Transformer (ViT) in image recognition tasks has prima
 
 ## Approach
 
-![image](main_picture_v4.png)
+![image](images/main_picture_v4.png)
 
 **Overview of Gaussian Mixture Mask (GMM) Attention Mechanism**
 
@@ -25,7 +25,7 @@ The success of the Vision Transformer (ViT) in image recognition tasks has prima
 In summary, the GMM Attention Mechanism enhances the self-attention mechanism by using a mixture of Gaussian masks with different parameters to generate attention maps for patches, thereby improving the modeling of local relationships in the input data.
 
 
-![image](motivation_v1.png)
+![image](images/motivation_v1.png)
 
 By observing the experimental results, we found that this simple learnable mask has the following regularities: patches inhibit the flow of information to themselves, and the correlation coefficient between patches varies with distance. Based on these geometric features, we propose a Gaussian Mixture Mask to fit the distribution and show how it fits the simple and learnable mask.
 
