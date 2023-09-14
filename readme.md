@@ -1,15 +1,29 @@
-# CNN or ViT? Revisiting Vision Transformers Through the Lens of Convolution
+# CNN or ViT? Revisiting Vision Transformers Through the Lens of Convolution 
+### [Arxiv](https://arxiv.org/pdf/2309.05375.pdf)
 [Chenghao Li](https://catworldlee.github.io/), [Chaoning Zhang*](https://scholar.google.co.kr/citations?user=lvhxhyQAAAAJ&hl=en)
 
-## Abstract
+## Intro
 
-The success of Transformers in the field of images has led to the development of many excellent vision transformer variants, but these variants often lack scalability and cannot be used together in many cases. We propose an attention mechanism based on Gaussian Mixture Mask (GMM), which can be applied to any visual transformer, plug and play. On small datasets, compared to the standard vision transformer, the performance is significantly improved without adding almost any parameters. We also compare with other excellent variants such as hierarchical Swin and deep CaiT. Under the same number of parameters, it is also better than these variants. Moreover, when it is inserted into other variants, it can continue to improve the performance of other variants.
+The success of the Vision Transformer (ViT) in image recognition tasks has primarily been attributed to its large training datasets or auxiliary pre-training. However, ViT's performance on small datasets is limited due to its global self-attention mechanism, which struggles with local modeling. To address this limitation without relying on pre-training, this work proposes an improvement by introducing a weight mask to the self-attention matrix.
 
 ## Approach
 
 ![image](main_picture_v4.png)
 
-Our Gaussian Mixture Mask Attention Mechanism firstly defines multiple Gaussian Masks with different parameters $\sigma$ and $\alpha$ for an image in patch-wise, and then linearly combines these Gaussian Masks to form a Gaussian Mixture Mask of size $2n-1$. Afterwards, a 'reverse-convolution' operation is performed in the Gaussian Mixture Mask, and the masked image is unfolded row-wise to obtain attention scores, which are regulated by the distance.
+**Overview of Gaussian Mixture Mask (GMM) Attention Mechanism**
+
+1. **Input Feature Vectors:** Initially, $N \times D$ feature vectors are processed in an attention module, resulting in three matrices, namely $Q$, $K$, and $V$.
+
+2. **Gaussian Masks:** Multiple Gaussian masks with varying parameters, specifically $\sigma$ and $\alpha$, are defined. These masks are then linearly combined to create a Gaussian mixture mask, which is of size $2N - 1$.
+
+3. **Mask Application:** This Gaussian mixture mask is applied to the original self-attention mechanism. It undergoes a shifting-window extension and unfolds to generate corresponding attention scores for each patch.
+
+4. **Attention Map:** The unfolded Gaussian mixture mask contributes to the creation of an attention map for each patch.
+
+5. **Output Computation:** The final output patch feature is computed as the dot product of the matrix $V$ and the attention map.
+
+In summary, the GMM Attention Mechanism enhances the self-attention mechanism by using a mixture of Gaussian masks with different parameters to generate attention maps for patches, thereby improving the modeling of local relationships in the input data.
+
 
 ![image](motivation_v1.png)
 
@@ -17,10 +31,18 @@ By observing the experimental results, we found that this simple learnable mask 
 
 ## Outcomes
 
-| Model          | CIFAR-10  | CIFAR-100 | SVHN    | Tiny-ImageNet |
-| -------------- | --------- | --------- | ------- | ------------ |
-| ViT-base       | 94.17\%   | 75.36\%   | 97.93\% | 59.89\%      |
-| GMM-ViT        | 94.75\%   | 77.81\%   | 98.01\% | 61.86\%      |
+| Model      | CIFAR-10  | CIFAR-100 | SVHN     | Tiny-ImageNet | Parameters | MACs     | Depth |
+|------------|-----------|-----------|----------|---------------|------------|----------|-------|
+| ViT        | 93.65%    | 75.36%    | 97.93%   | 59.89%        | 2.7M       | 170.9M   | 9     |
+| GMM-ViT    | **95.06%**| **77.81%**| **98.01%** | **62.27%**   | 2.7M       | 170.9M   | 9     |
+| Swin       | 95.26%    | 77.88%    | 97.89%   | 60.45%        | 7.1M       | 236.9M   | 12    |
+| GMM-Swin   | **95.39%**| **78.26%**| **97.90%** | **61.03%**   | 7.1M       | 236.9M   | 12    |
+| CaiT       | 94.79%    | 78.42%    | 98.13%   | 62.46%        | 5.1M       | 305.9M   | 26    |
+| GMM-CaiT   | **95.15%**| **78.97%**| 98.09%   | **63.64%**    | 5.1M       | 305.9M   | 26    |
+| PiT        | 93.68%    | 72.82%    | 97.78%   | 57.63%        | 7.0M       | 239.1M   | 12    |
+| GMM-PiT    | **94.41%**| **74.16%**| **97.82%** | **58.37%**   | 7.0M       | 239.1M   | 12    |
+| T2T        | 95.32%    | 78.10%    | 97.99%   | 61.50%        | 6.5M       | 417.4M   | 13    |
+| GMM-T2T    | **96.16%**| **79.91%**| 97.98%   | **63.33%**    | 6.5M       | 417.4M   | 13    |
 
 ## Run scripts
 
