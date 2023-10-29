@@ -1,4 +1,4 @@
-# CNN or ViT? Revisiting Vision Transformers Through the Lens of Convolution 
+# RetNet Viewed through Convolution
 ### [Arxiv](https://arxiv.org/pdf/2309.05375.pdf)
 [Chenghao Li](https://catworldlee.github.io/), [Chaoning Zhang*](https://scholar.google.co.kr/citations?user=lvhxhyQAAAAJ&hl=en)
 
