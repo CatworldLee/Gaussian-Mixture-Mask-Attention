@@ -1,6 +1,11 @@
+![image](images/main_picture_v4.png)
+
 # RetNet Viewed through Convolution
-### [Arxiv](https://arxiv.org/pdf/2309.05375.pdf)
-[Chenghao Li](https://catworldlee.github.io/), [Chaoning Zhang*](https://scholar.google.co.kr/citations?user=lvhxhyQAAAAJ&hl=en)
+
+**Paper:** [Read the Full Paper (PDF)](https://arxiv.org/pdf/2309.05375.pdf)
+
+**Authors:** Chenghao Li, Chaoning Zhang
+
 
 
 ## Environment
@@ -14,11 +19,13 @@ pip install -r requirements.txt
 
 ## Intro
 
-The success of the Vision Transformer (ViT) in image recognition tasks has primarily been attributed to its large training datasets or auxiliary pre-training. However, ViT's performance on small datasets is limited due to its global self-attention mechanism, which struggles with local modeling. To address this limitation without relying on pre-training, this work proposes an improvement by introducing a weight mask to the self-attention matrix.
+The success of Vision Transformer (ViT) in image recognition tasks has been well-documented. While ViT can capture global dependencies better than Convolutional Neural Networks (CNN), CNN's local characteristics are still valuable due to their resource efficiency. Recently, [RetNet](https://arxiv.org/abs/2307.08621) has demonstrated remarkable performance in language modeling, outperforming Transformers with explicit local modeling. This has led researchers to explore Transformers in the Computer Vision (CV) field.
+
+[This paper](https://arxiv.org/pdf/2309.05375.pdf) investigates the applicability of RetNet from a CNN perspective and introduces a customized RetNet variant for visual tasks. Similar to RetNet, we enhance ViT's local modeling by introducing a weight mask to the self-attention matrix. Our initial results with a learnable element-wise weight mask (ELM) show promise. However, ELM introduces additional parameters and optimization complexity.
+
+To address this, our work proposes a novel Gaussian mixture mask (GMM) with only two learnable parameters, making it suitable for various ViT variants with adaptable attention mechanisms. Experiments on multiple small datasets illustrate the effectiveness of our Gaussian mask in enhancing ViTs at minimal additional cost in terms of parameters and computation.
 
 ## Approach
-
-![image](images/main_picture_v4.png)
 
 **Overview of Gaussian Mixture Mask (GMM) Attention Mechanism**
 
