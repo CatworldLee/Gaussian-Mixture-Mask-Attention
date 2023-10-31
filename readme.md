@@ -27,24 +27,17 @@ To address this, our work proposes a novel Gaussian mixture mask (GMM) with only
 
 ## Approach
 
-**Overview of Gaussian Mixture Mask (GMM) Attention Mechanism**
+![image](images/conv.jpg)
 
-1. **Input Feature Vectors:** Initially, $N \times D$ feature vectors are processed in an attention module, resulting in three matrices, namely $Q$, $K$, and $V$.
+**Element-wise Conv Operation.** If the mask is a circulant matrix with multi-diagonal properties, when such a matrix is added to the attention scores using the Hadamard product, it can be perceived as performing an operation akin to an element-wise convolution. The *convolution kernel* is the hidden feature vector, while the *feature map* is the weight mask. Examples of 1D and 2D cases are shown above.
 
-2. **Gaussian Masks:** Multiple Gaussian masks with varying parameters, specifically $\sigma$ and $\alpha$, are defined. These masks are then linearly combined to create a Gaussian mixture mask, which is of size $2N - 1$.
 
-3. **Mask Application:** This Gaussian mixture mask is applied to the original self-attention mechanism. It undergoes a shifting-window extension and unfolds to generate corresponding attention scores for each patch.
-
-4. **Attention Map:** The unfolded Gaussian mixture mask contributes to the creation of an attention map for each patch.
-
-5. **Output Computation:** The final output patch feature is computed as the dot product of the matrix $V$ and the attention map.
-
-In summary, the GMM Attention Mechanism enhances the self-attention mechanism by using a mixture of Gaussian masks with different parameters to generate attention maps for patches, thereby improving the modeling of local relationships in the input data.
+**Gaussian Mixture Mask (GMM) Attention** From the perspective of CNN, by explicitly modeling and discovering two features of ViT using masks, we introduce the Gaussian Mixture Mask (GMM). We simply add the obtained GMM to the preceding softmax operation and validate it through experiments. Adding it before and after the softmax does not significantly affect the results. To maintain a structure similar to the original paper, we treat this operation as a straightforward masking operation to achieve the Gaussian mixture attention mechanism. 
 
 
 ![image](images/motivation_v1.png)
 
-By observing the experimental results, we found that this simple learnable mask has the following regularities: patches inhibit the flow of information to themselves, and the correlation coefficient between patches varies with distance. Based on these geometric features, we propose a Gaussian Mixture Mask to fit the distribution and show how it fits the simple and learnable mask.
+Building upon these insights, Gaussian Mixture Mask outperforms the Element-wise Learnable Mask significantly and minimizes the additional parameter and computation overhead to almost zero.
 
 ## Outcomes
 
@@ -63,13 +56,21 @@ By observing the experimental results, we found that this simple learnable mask 
 
 ## Run scripts
 
-### Original model
+The following simple commands can be used to run experiments on your machine.
+
+**Quick Start**
+
+```bash
+python main.py
+```
+
+**Original model**
 
 ```bash
 python main.py --model [model_name]
 ```
 
-### GMM variants
+**GMM variants**
 
 ```bash
 python main.py --model [model_name] --is_GMM
@@ -77,5 +78,5 @@ python main.py --model [model_name] --is_GMM
 
 ## Acknowledgements
 
-We would like to express our great appreciation to the authors of the SPT_LSA_ViT and pytorch-image-models repositories, aanna0701 and rwightman, for their great help to the machine learning community. Their provided models and related technical supports have helped us to explore this field in a more comprehensive and in-depth way, thus enhancing our learning efficiency.
+We would like to express our great appreciation to the authors of the [pytorch-image-models](https://github.com/huggingface/pytorch-image-models) and [Vision Transformer for Small-Size Datasets](https://github.com/aanna0701/SPT_LSA_ViT) repositories, for their great help to the machine learning community. Their provided models and related technical supports have helped us to explore this field in a more comprehensive and in-depth way, thus enhancing our learning efficiency.
 
