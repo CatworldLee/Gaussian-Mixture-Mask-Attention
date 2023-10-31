@@ -130,15 +130,20 @@ class ViT(nn.Module):
         self.dim = dim
         self.num_classes = num_classes
 
+        self.is_mask = is_GMM or is_SLM
+
         self.mask = nn.Parameter(On_attention_gaussian_mask(self.num_patches), requires_grad=False)
 
         self.to_patch_embedding = nn.Sequential(
             Rearrange('b c (h p1) (w p2) -> b (h w) (p1 p2 c)', p1 = patch_height, p2 = patch_width),
             nn.Linear(self.patch_dim, self.dim)
         )
-            
-         
-        self.pos_embedding = nn.Parameter(torch.randn(1, self.num_patches, self.dim))
+        
+        if self.is_mask:
+            self.pos_embedding = nn.Parameter(torch.randn(1, self.num_patches, self.dim))
+        else:
+            self.pos_embedding = nn.Parameter(torch.randn(1, self.num_patches + 1, self.dim))
+            self.cls_token = nn.Parameter(torch.randn(1, 1, self.dim))
             
         self.dropout = nn.Dropout(emb_dropout)
         self.transformer = Transformer(self.dim, self.num_patches, depth, heads, dim_head, mlp_dim_ratio, num_kernals, dropout, 
@@ -157,12 +162,23 @@ class ViT(nn.Module):
         x = self.to_patch_embedding(img)
             
         b, n, _ = x.shape
-        
-        x += self.pos_embedding[:, : n]
-        x = self.dropout(x)
 
-        x = self.transformer(x)      
+        if self.is_mask:
+            x += self.pos_embedding[:, : n]
+            x = self.dropout(x)
+
+            x = self.transformer(x)      
+            
+            return self.mlp_head(x.mean(dim=1))
         
-        return self.mlp_head(x.mean(dim=1))
+        else:
+            cls_tokens = repeat(self.cls_token, '() n d -> b n d', b = b)
+            x = torch.cat((cls_tokens, x), dim=1)
+            x += self.pos_embedding[:, :(n + 1)]
+            x = self.dropout(x)
+            x = self.transformer(x) 
+
+            return self.mlp_head(x[:, 0])  
+            
 
 
