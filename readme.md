@@ -2,6 +2,16 @@
 ### [Arxiv](https://arxiv.org/pdf/2309.05375.pdf)
 [Chenghao Li](https://catworldlee.github.io/), [Chaoning Zhang*](https://scholar.google.co.kr/citations?user=lvhxhyQAAAAJ&hl=en)
 
+
+## Environment
+
+The environment configuration file has already been provided, and you can use the following script to create the required environment.
+
+```bash
+pip install -r requirements.txt
+```
+
+
 ## Intro
 
 The success of the Vision Transformer (ViT) in image recognition tasks has primarily been attributed to its large training datasets or auxiliary pre-training. However, ViT's performance on small datasets is limited due to its global self-attention mechanism, which struggles with local modeling. To address this limitation without relying on pre-training, this work proposes an improvement by introducing a weight mask to the self-attention matrix.
