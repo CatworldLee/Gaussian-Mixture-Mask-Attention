@@ -35,7 +35,7 @@ To address this, our work proposes a novel Gaussian mixture mask (GMM) with only
 **Gaussian Mixture Mask (GMM) Attention** From the perspective of CNN, by explicitly modeling and discovering two features of ViT using masks, we introduce the Gaussian Mixture Mask (GMM). We simply add the obtained GMM to the preceding softmax operation and validate it through experiments. Adding it before and after the softmax does not significantly affect the results. To maintain a structure similar to the original paper, we treat this operation as a straightforward masking operation to achieve the Gaussian mixture attention mechanism. 
 
 
-![image](images/motivation_v1.png)
+![image](images/simulation_proccess.png)
 
 Building upon these insights, Gaussian Mixture Mask outperforms the Element-wise Learnable Mask significantly and minimizes the additional parameter and computation overhead to almost zero.
 
