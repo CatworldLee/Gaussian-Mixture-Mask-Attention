@@ -78,5 +78,5 @@ python main.py --model [model_name] --is_GMM
 
 ## Acknowledgements
 
-We would like to express our great appreciation to the authors of the [pytorch-image-models](https://github.com/huggingface/pytorch-image-models) and [Vision Transformer for Small-Size Datasets](https://github.com/aanna0701/SPT_LSA_ViT) repositories, for their great help to the machine learning community.
+We would like to express our great appreciation to the code authors of the [pytorch-image-models](https://github.com/huggingface/pytorch-image-models) and [Vision Transformer for Small-Size Datasets](https://github.com/aanna0701/SPT_LSA_ViT) repositories, for their great help to the machine learning community.
 
