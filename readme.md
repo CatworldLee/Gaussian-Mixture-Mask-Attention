@@ -2,12 +2,6 @@
 
 # RetNet Viewed through Convolution
 
-**Paper:** [Read the Full Paper (PDF)](https://arxiv.org/pdf/2309.05375v2.pdf)
-
-**Authors:** Chenghao Li, Chaoning Zhang
-
-
-
 ## Environment
 
 The environment configuration file has already been provided, and you can use the following script to create the required environment.
