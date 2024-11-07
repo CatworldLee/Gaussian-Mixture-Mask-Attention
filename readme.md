@@ -1,6 +1,6 @@
 ![image](images/main_picture_v4.png)
 
-# RetNet Viewed through Convolution
+# RetNet Viewed through Convolution ([Pattern Recognition Link](https://www.sciencedirect.com/science/article/pii/S0031320324003765))
 
 ## Environment
 
